@@ -1,0 +1,7 @@
+Epoch 1: Average Loss: 1.0694704242034893e-05
+Epoch 1: Average Loss: 1.0681228740902565e-05
+Epoch 1: Average Loss: 0.0032954466845983113
+Epoch 2: Average Loss: 4.0893064214293343e-05
+Epoch 3: Average Loss: 2.1353693233712866e-05
+Epoch 4: Average Loss: 2.3351583711025357e-05
+Epoch 5: Average Loss: 3.223650956454334e-05

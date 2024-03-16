@@ -1,0 +1,6 @@
+train2.ipynb
+train.py
+mem_eval.py
+.model/*
+*.pth
+120b40c149fcd761cfc4f5ef4225c9aa.jpg
