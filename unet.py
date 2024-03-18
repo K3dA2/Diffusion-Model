@@ -17,6 +17,7 @@ class Unet(nn.Module):
         self.blk4 = Block(256,128,upscale=True)
         self.blk5 = Block(128,64,upscale=True)
         self.res = nn.Conv2d(64,3,padding=1,kernel_size=3)
+        self.res.weight.data.fill_(0)
         
     def forward(self,img,t):
         out1 = self.blk1.forward(img,t)
