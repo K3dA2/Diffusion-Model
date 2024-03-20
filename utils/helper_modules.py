@@ -80,6 +80,7 @@ class Attention(nn.Module):
         self.in_dim = in_dim
         self.to_qkv = nn.Conv2d(in_dim,in_dim*3, kernel_size=3, padding=1)
         self.last_layer = nn.Conv2d(in_dim,in_dim,kernel_size=3,padding=1)
+        self.bn = nn.BatchNorm2d(in_dim)
 
     def forward(self,x):
         qkv = self.to_qkv(x)
@@ -89,6 +90,7 @@ class Attention(nn.Module):
         qk = F.softmax(qk)
         qkv = torch.mul(qk,v)
         out = self.last_layer(qkv)
+        #return self.bn(out+x)
         return out
         
         
