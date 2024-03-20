@@ -56,7 +56,7 @@ class TimeEmb(nn.Module):
         )
     
     def forward(self,x):
-        out = self.sig_emb(x)
+        #out = self.sig_emb(x)
         frequencies = torch.exp(
             torch.linspace(
                 math.log(1.0),
@@ -65,7 +65,7 @@ class TimeEmb(nn.Module):
             )
         ).to(x.device)
         angular_speeds = 2.0 * math.pi * frequencies
-        emb = torch.concat([torch.sin(angular_speeds*out),torch.cos(angular_speeds*out)], axis = -1)
+        emb = torch.concat([torch.sin(angular_speeds*x),torch.cos(angular_speeds*x)], axis = -1)
         return emb
 
 '''
