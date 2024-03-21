@@ -6,3 +6,4 @@ mem_eval.py
 120b40c149fcd761cfc4f5ef4225c9aa.jpg
 model_1000_loss.txt
 model_fixed_1000_loss.txt
+__pycache__/
