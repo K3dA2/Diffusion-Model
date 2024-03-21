@@ -90,8 +90,8 @@ class Attention(nn.Module):
         qk = F.softmax(qk)
         qkv = torch.mul(qk,v)
         out = self.last_layer(qkv)
-        #return self.bn(out+x)
-        return out
+        return self.bn(out+x)
+        #return out
         
         
 '''
