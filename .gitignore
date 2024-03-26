@@ -8,3 +8,4 @@ model_1000_loss.txt
 model_fixed_1000_loss.txt
 __pycache__/
 Inference Images/
+weights/
