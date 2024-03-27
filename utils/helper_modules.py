@@ -60,7 +60,7 @@ class TimeEmb(nn.Module):
         frequencies = torch.exp(
             torch.linspace(
                 math.log(1.0),
-                math.log(200.0),
+                math.log(1000.0),
                 self.sf//2
             )
         ).to(x.device)
