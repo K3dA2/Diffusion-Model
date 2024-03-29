@@ -19,9 +19,9 @@ class ResNet(nn.Module):
         self.conv2 = nn.Conv2d(out_channels, out_channels//2, kernel_size=3, padding=1)
         self.conv3 = nn.Conv2d(out_channels//2, out_channels, kernel_size=3, padding=1)
         self.skip_conv = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1)
-        self.bn1 = nn.BatchNorm2d(out_channels)
-        self.bn2 = nn.BatchNorm2d(out_channels // 2)
-        self.bn3 = nn.BatchNorm2d(out_channels)
+        self.bn1 = nn.GroupNorm(out_channels)
+        self.bn2 = nn.GroupNorm(out_channels // 2)
+        self.bn3 = nn.GroupNorm(out_channels)
 
     def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))

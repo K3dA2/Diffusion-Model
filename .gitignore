@@ -9,3 +9,5 @@ model_fixed_1000_loss.txt
 __pycache__/
 Inference Images/
 weights/
+test.py
+waifu-diffusion-n-cts_1000-30000-loss.txt
