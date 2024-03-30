@@ -27,3 +27,6 @@ Epoch 26: Average Loss: 0.03925458960330639
 Epoch 1: Average Loss: 0.11934290426533396
 Epoch 2: Average Loss: 0.05429715902839855
 Epoch 3: Average Loss: 0.04901670966660831
+Epoch 1: Average Loss: 0.07402045959209251
+Epoch 2: Average Loss: 0.0469781153284513
+Epoch 3: Average Loss: 0.04492531540780896

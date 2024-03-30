@@ -80,21 +80,24 @@ Expected Output is the same shape as the input
 class Attention(nn.Module):
     def __init__(self, num_heads = 4,in_dim=16) -> None:
         super().__init__()
-        self.num_heads = num_heads
-        self.in_dim = in_dim
+        self.mha = nn.MultiheadAttention(in_dim, num_heads, batch_first= True)
         self.to_qkv = nn.Conv2d(in_dim,in_dim*3, kernel_size=3, padding=1)
         self.last_layer = nn.Conv2d(in_dim,in_dim,kernel_size=3,padding=1)
-        self.bn = nn.BatchNorm2d(in_dim)
+        self.ln = nn.LayerNorm(in_dim)
+        self.ff = nn.Sequential(
+            nn.LayerNorm([in_dim]),
+            nn.Linear(in_dim, in_dim),
+            nn.GELU(),
+            nn.Linear(in_dim, in_dim),
+        )
 
     def forward(self,x):
-        qkv = self.to_qkv(x)
-        q,k,v = torch.tensor_split(qkv,3,dim=1)
-        qk = torch.mul(q,k)
-        qk = qk/(self.in_dim**0.5)
-        qk = F.softmax(qk)
-        qkv = torch.mul(qk,v)
-        out = self.last_layer(qkv)
-        return self.bn(out+x)
+        reshaped_x = x.view(x.size(0), -1, x.size(1))  # Reshape to [batch_size, channels, -1]
+        reshaped_x = self.ln(reshaped_x)
+        out,_ = self.mha(reshaped_x,reshaped_x,reshaped_x)
+        out = self.ff(out)
+        out = out.view(x.size(0),x.size(1),x.size(2),x.size(3))
+        return F.layer_norm(out+x, out.size()[1:])
         #return out
         
         
@@ -103,7 +106,7 @@ Unit testing class
 '''
 class TestResNet(unittest.TestCase):
     def test_forward(self):
-        '''
+        
         model = Attention()
         input_tensor = torch.randn(1, 16, 64, 64)
         output = model.forward(input_tensor)
@@ -115,7 +118,7 @@ class TestResNet(unittest.TestCase):
         output = model.forward(input_tensor)
         self.assertEqual(output.shape, (1, 16, 64, 64))  # Adjust the expected shape based on your model architecture
         
-        '''
+        
         model = TimeEmb()
         #input_tensor = torch.tensor([1.0])
         input_tensor = torch.arange(0,200)
