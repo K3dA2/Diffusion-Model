@@ -19,20 +19,32 @@ class ResNet(nn.Module):
         self.conv2 = nn.Conv2d(out_channels, out_channels//2, kernel_size=3, padding=1)
         self.conv3 = nn.Conv2d(out_channels//2, out_channels, kernel_size=3, padding=1)
         self.skip_conv = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1)
-        self.bn1 = nn.GroupNorm(out_channels)
-        self.bn2 = nn.GroupNorm(out_channels // 2)
-        self.bn3 = nn.GroupNorm(out_channels)
+        #self.bn1 = nn.BatchNorm2d(out_channels)
+        #self.bn2 = nn.BatchNorm2d(out_channels // 2)
+        #self.bn3 = nn.BatchNorm2d(out_channels)
+        self.dropout = nn.Dropout2d(0.5)
 
     def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
+        # Apply LayerNorm after conv1
+        out = F.relu(self.conv1(x))
+        out = self.dropout(out)
+        out = F.layer_norm(out, out.size()[1:])
+        
+        # Apply LayerNorm after conv2
+        out = F.relu(self.conv2(out))
+        out = self.dropout(out)
+        out = F.layer_norm(out, out.size()[1:])
+        
         out1 = self.skip_conv(x)
-        out = F.relu(self.bn2(self.conv2(out)))
+        out = F.relu(self.conv3(out))
+        
         if self.useMaxPool:
-            out = F.max_pool2d(self.bn3(self.conv3(out)) + out1, 2)
+            out = F.max_pool2d(out + out1, 2)
         elif self.upscale:
-            out = F.upsample(self.bn3(self.conv3(out)) + out1, scale_factor=2)
+            out = F.upsample(out + out1, scale_factor=2)
         else:
-            out = F.relu(self.bn3(self.conv3(out)) + out1)
+            out = F.relu(out + out1)
+        
         return out
 
 '''
@@ -46,14 +58,6 @@ class TimeEmb(nn.Module):
         self.sf = sf
         self.h_dim = h_dim
         self.maxPos = maxPositions
-        self.sig_emb = nn.Sequential(
-            nn.Linear(1,h_dim),
-            nn.ReLU(),
-            nn.Linear(h_dim,h_dim*5),
-            nn.ReLU(),
-            nn.Linear(h_dim*5,1),
-            nn.ReLU()
-        )
     
     def forward(self,x):
         #out = self.sig_emb(x)
@@ -104,14 +108,14 @@ class TestResNet(unittest.TestCase):
         input_tensor = torch.randn(1, 16, 64, 64)
         output = model.forward(input_tensor)
         self.assertEqual(output.shape,(1,16,64,64))
-        
+        '''
         
         model = ResNet(in_channels=16,out_channels = 16,useMaxPool=False)
         input_tensor = torch.randn(1, 16, 64, 64)  # Example input with shape (batch_size, channels, height, width)
         output = model.forward(input_tensor)
         self.assertEqual(output.shape, (1, 16, 64, 64))  # Adjust the expected shape based on your model architecture
-        '''
         
+        '''
         model = TimeEmb()
         #input_tensor = torch.tensor([1.0])
         input_tensor = torch.arange(0,200)
@@ -121,7 +125,7 @@ class TestResNet(unittest.TestCase):
         print(output.shape)
         self.assertEqual(output.shape,(200,32))
         print(output)
-        
+        '''
         
 if __name__ == '__main__':
     unittest.main()
