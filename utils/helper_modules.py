@@ -78,7 +78,7 @@ It uses Convolutions as the linear layer in typical attention
 Expected Output is the same shape as the input
 '''
 class Attention(nn.Module):
-    def __init__(self, num_heads = 4,in_dim=16) -> None:
+    def __init__(self, num_heads = 2,in_dim=16) -> None:
         super().__init__()
         self.mha = nn.MultiheadAttention(in_dim, num_heads, batch_first= True)
         self.to_qkv = nn.Conv2d(in_dim,in_dim*3, kernel_size=3, padding=1)
