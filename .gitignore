@@ -1,9 +1,7 @@
 train2.ipynb
-train.py
 mem_eval.py
 .model/*
 *.pth
-120b40c149fcd761cfc4f5ef4225c9aa.jpg
 model_1000_loss.txt
 model_fixed_1000_loss.txt
 __pycache__/
@@ -11,3 +9,7 @@ Inference Images/
 weights/
 test.py
 waifu-diffusion-n-cts_1000-30000-loss.txt
+convert.py
+plot.ipynb
+Noise/
+Inference Steps/
