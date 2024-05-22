@@ -34,16 +34,17 @@ def training_loop(n_epochs, optimizer, model, loss_fn, device, accumulation_step
                         sp = st + batch_size
                     img_arr = []
                     for i in range(st,sp):
+                        
                         img = plt.imread(path + '/' + image_names[data_idx[i]])
-                        img = reshape_img(img)
+                        img = reshape_img(img,size=(32,32),greyscale=False)
                         img = np.expand_dims(img, 0)
                         img_arr.append(img)
                     st+= batch_size
                     
                     t = generate_timestamp(0, batch_size)
                     t = torch.reshape(t, (-1, 1)).type(torch.float32)
-                    
                     imgs, noise = forward_cosine_noise(None, np.squeeze(np.array(img_arr)), t)
+                    
                     if torch.is_tensor(imgs):
                         imgs = imgs.type(torch.float32).to(device)
                     else:
@@ -51,6 +52,7 @@ def training_loop(n_epochs, optimizer, model, loss_fn, device, accumulation_step
                     noise = torch.from_numpy(noise).type(torch.float32).to(device)
                     t = t.to(device)
                     t /= timesteps
+
                     outputs = model(imgs, t)
                     
                     loss = loss_fn(outputs, noise)
@@ -73,7 +75,7 @@ def training_loop(n_epochs, optimizer, model, loss_fn, device, accumulation_step
                     pbar.set_postfix(loss=loss.item())
                 
             avg_loss_epoch = loss_train / ((repeats*data_length)//batch_size)
-            with open("waifu-diffusion-n-cts_1000-4000-loss.txt", "a") as file:
+            with open("mnist-diffusion-n-cts_1000-4000-loss.txt", "a") as file:
                 file.write(f"{avg_loss_epoch}\n")
             
             print('{} Epoch {}, Training loss {}'.format(
@@ -98,14 +100,12 @@ def training_loop(n_epochs, optimizer, model, loss_fn, device, accumulation_step
 
 if __name__ == "__main__":
     timesteps = 1000
-    path = '/Users/ayanfe/Documents/Datasets/animefaces256cleaner'
-    #path = '/Users/ayanfe/Documents/Datasets/Landscape'
-    model_path = '/Users/ayanfe/Documents/Code/Diffusion-Model/weights/waifu-diffusion-n-cts_1000-4000.pth'
-    #model_path = '/Users/ayanfe/Documents/Code/Diffusion-Model/weights/landscape-diffusion-n-cts_1000-4000.pth'
+    path = '/Users/ayanfe/Documents/Datasets/MNIST Upscaled/upscayl_png_realesrgan-x4plus_4x'
+    model_path = '/Users/ayanfe/Documents/Code/Diffusion-Model/weights/mnist-diffusion-n-cts_1000-4000.pth'
     image_names = get_data(path)
     print("Image Length: ",len(image_names))
 
-    model = Unet()
+    model = Unet(greyscale=False)
     #model.load_state_dict(torch.load(model_two))
     device = torch.device("mps")
     model.to(device)

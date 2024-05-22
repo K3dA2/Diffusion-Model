@@ -9,41 +9,22 @@ import unittest
 This ResNet class is intended to be used as the smallest unit of the block class
 '''
 class ResNet(nn.Module):
-    def __init__(self, in_channels = 3 ,out_channels = 32, useMaxPool = False, upscale = False):
+    def __init__(self, in_channels = 3 ,out_channels = 32):
         super().__init__()
         self.num_channels = out_channels
         self.in_channels = in_channels
-        self.useMaxPool = useMaxPool
-        self.upscale = upscale
-        self.conv1 = nn.Conv2d(in_channels, out_channels*2, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv2d(out_channels*2, out_channels, kernel_size=3, padding=1)
         self.skip_conv = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1)
-        self.dropout = nn.Dropout2d(0.2)
-        self.batchnorm = nn.BatchNorm2d(out_channels*2)
-        self.batchnorm1 = nn.BatchNorm2d(out_channels)
-        
+        self.network = nn.Sequential(
+            nn.BatchNorm2d(in_channels),
+            nn.Conv2d(in_channels, out_channels*2, kernel_size=3, padding=1),
+            nn.SELU(),
+            nn.Conv2d(out_channels*2, out_channels, kernel_size=3, padding=1)
+        )
 
     def forward(self, x):
-        # Apply LayerNorm after conv1
-        out = F.silu(self.conv1(x))
-        out = self.dropout(out)
-        out = self.batchnorm(out)
-        
-        # Apply LayerNorm after conv2
-        out = F.silu(self.conv2(out))
-        out = self.dropout(out)
-        out = self.batchnorm1(out)
-        
+        out = self.network(x)
         skip = self.skip_conv(x)
-        
-        if self.useMaxPool:
-            out = F.silu(F.max_pool2d(out + skip, 2))
-            return out
-        elif self.upscale:
-            out = F.silu(F.upsample(out + skip, scale_factor=2))
-        else:
-            out = F.silu(out + skip)
-        return out
+        return torch.add(out,skip)
 
 '''
 Time Embedding class uses sinusodial embedding to input time information into the NN
@@ -75,38 +56,38 @@ Implementation of the Attention Layer.
 It uses Convolutions as the linear layer in typical attention
 Expected Output is the same shape as the input
 '''
+class SelfAttention(nn.Module):
+    def __init__(self, channels, size):
+        super(SelfAttention, self).__init__()
+        self.channels = channels
+        self.size = size
+        self.mha = nn.MultiheadAttention(channels, 4, batch_first=True)
+        self.ln = nn.LayerNorm([channels])
+
+    def forward(self, x):
+        x = x.view(-1, self.channels, self.size * self.size).swapaxes(1, 2)
+        x_ln = self.ln(x)
+        attention_value, _ = self.mha(x_ln, x_ln, x_ln)
+        attention_value = attention_value + x
+        return attention_value.swapaxes(2, 1).view(-1, self.channels, self.size, self.size)
+    
 class Attention(nn.Module):
-    def __init__(self, num_heads = 2,in_dim=16) -> None:
+    def __init__(self, num_heads = 4,in_dim=16) -> None:
         super().__init__()
-        self.ln = nn.LayerNorm(in_dim)
-        self.qkv = nn.Linear(in_dim,in_dim*3)
-        self.ff = nn.Sequential(
-            nn.LayerNorm([in_dim]),
-            nn.Linear(in_dim, in_dim),
-            nn.GELU(),
-            nn.Linear(in_dim, in_dim),
-        )
+        self.num_heads = num_heads
         self.in_dim = in_dim
-        self.q_W = nn.Linear(in_dim,in_dim)
-        self.k_W = nn.Linear(in_dim,in_dim)
-        self.v_W = nn.Linear(in_dim,in_dim)
+        self.to_qkv = nn.Conv2d(in_dim,in_dim*3, kernel_size=3, padding=1)
+        self.last_layer = nn.Conv2d(in_dim,in_dim,kernel_size=3,padding=1)
 
     def forward(self,x):
-        reshaped_x = x.view(x.size(0), -1, x.size(1))  # Reshape to [batch_size, channels, -1]
-        reshaped_x = self.ln(reshaped_x)
-        out = self.qkv(reshaped_x)
-        q,k,v = torch.split(out, split_size_or_sections=self.in_dim, dim=-1)
-        q = self.q_W(q)
-        k = self.k_W(k)
-        k = k.permute(0,2,1)
-        qk = torch.matmul(q,k)/torch.sqrt(torch.tensor(self.in_dim, dtype=torch.float32))
+        qkv = self.to_qkv(x)
+        q,k,v = torch.tensor_split(qkv,3,dim=1)
+        qk = torch.mul(q,k)
+        qk = qk/(self.in_dim**0.5)
         qk = F.softmax(qk)
-        v = self.v_W(v)
-        qkv = torch.matmul(qk,v)
-        out = self.ff(qkv)
-        out = out.view(x.size(0),x.size(1),x.size(2),x.size(3))
-        return F.layer_norm(out+x, out.size()[1:])
-        #return out
+        qkv = torch.mul(qk,v)
+        out = self.last_layer(qkv)
+        return out
         
         
 '''
@@ -119,14 +100,14 @@ class TestResNet(unittest.TestCase):
         input_tensor = torch.randn(1, 16, 64, 64)
         output = model.forward(input_tensor)
         self.assertEqual(output.shape,(1,16,64,64))
-        '''
         
-        model = ResNet(in_channels=64,out_channels = 16,useMaxPool=False)
+        
+        model = ResNet(in_channels=64,out_channels = 16)
         input_tensor = torch.randn(1, 64, 64, 64)  # Example input with shape (batch_size, channels, height, width)
         output = model.forward(input_tensor)
         self.assertEqual(output.shape, (1, 16, 64, 64))  # Adjust the expected shape based on your model architecture
         
-        '''
+        
         model = TimeEmb()
         #input_tensor = torch.tensor([1.0])
         input_tensor = torch.arange(0,200)
@@ -137,6 +118,11 @@ class TestResNet(unittest.TestCase):
         self.assertEqual(output.shape,(200,32))
         print(output)
         '''
+
+        model = SelfAttention(16,64)
+        input_tensor = torch.randn(3, 16, 64, 64)
+        output = model.forward(input_tensor)
+        self.assertEqual(output.shape,(3,16,64,64))
         
 if __name__ == '__main__':
     unittest.main()

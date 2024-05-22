@@ -13,3 +13,8 @@ convert.py
 plot.ipynb
 Noise/
 Inference Steps/
+flower-diffusion-loss.txt
+animals-diffusion-n-cts_1000-4000-loss.txt
+mnist-diffusion-n-cts_1000-4000-loss.txt
+number-diffusion-loss.txt
+waifu-diffusion-loss.txt
