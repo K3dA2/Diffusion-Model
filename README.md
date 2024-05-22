@@ -18,7 +18,6 @@ models/: Where I plan on storing all implemented models eventually.
 inference_images/: Images showcasing inference results from the diffusion model.
 utils/: Utility functions and scripts used in model training.
 
-
 ## Usage
 
 To utilize the diffusion model implementations in this repository, follow these steps:
@@ -30,7 +29,7 @@ Clone the repository to your local machine:
 Install the required dependencies. Ensure that you have Python and the necessary libraries installed:
 
 ## Inference Results
-Here are some of my favorite results from the current base model :) (Remeber its still training)
+Here are some of my favorite results from the old base model :) (Remeber its still training)
 
 ![Epoch 4](https://github.com/K3dA2/Diffusion-Model/assets/112480809/ac2894b2-4131-4e84-adc2-8eb34946be1f)
 ![Epoch 5](https://github.com/K3dA2/Diffusion-Model/assets/112480809/4c4b3687-90ed-49d6-844c-8d51de601b1d)
@@ -43,6 +42,15 @@ Here are some of my favorite results from the current base model :) (Remeber its
 
 ![Epoch 12](https://github.com/K3dA2/Diffusion-Model/assets/112480809/161e3fa6-b17f-4539-be98-443a7b500283)
 ![Epoch 12](https://github.com/K3dA2/Diffusion-Model/assets/112480809/7c71469b-b316-4e37-90d6-468dbb1b839d)
+
+## Images From New Model
+
+![fbe4725d-63c9-45c7-8ecd-b979926cc658](https://github.com/K3dA2/Diffusion-Model/assets/112480809/2188003a-a7a5-4476-abf3-806a65f7bb27)
+![215f043b-c4ca-4ec2-bf6c-248e453cb4a8](https://github.com/K3dA2/Diffusion-Model/assets/112480809/dafc1dfc-5aab-4b00-a9eb-2588ceac5891)
+
+![7916e7a5-eb58-49b8-b2ce-4ec74b64f4cc](https://github.com/K3dA2/Diffusion-Model/assets/112480809/8c7e90b4-9561-4a5c-8c21-bb96b8f29b33)
+![f38b5054-552b-448e-ba46-193a0ffbff8b](https://github.com/K3dA2/Diffusion-Model/assets/112480809/fc2c662d-5ff6-49e0-87dc-bf51399e4de1)
+
 
 ## Dataset
 I'm currently using a subset (30k Images) of [this](https://www.kaggle.com/datasets/scribbless/another-anime-face-dataset) Anime Face Dataset. 
